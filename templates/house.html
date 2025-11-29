@@ -3,12 +3,18 @@
 <head><title>{{ house.name }}</title></head>
 <body>
 <h1>{{ house.name }}</h1>
-<a href="/house/{{ house.id }}/thread/new">New Thread</a>
+
+<a href="/house/{{ house.id }}/thread/new">Create New Thread</a>
+
+<h2>Threads</h2>
 <ul>
 {% for t in threads %}
   <li><a href="/thread/{{ t.id }}">{{ t.title }}</a></li>
+{% else %}
+  <li>No threads yet.</li>
 {% endfor %}
 </ul>
-<a href="/">Back</a>
+
+<a href="/">Back to Houses</a>
 </body>
 </html>
