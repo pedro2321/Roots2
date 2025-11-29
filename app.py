@@ -1,45 +1,61 @@
 from flask import Flask, render_template, request, redirect, url_for
-import sqlite3
 import hashlib
+import psycopg2
+import psycopg2.extras
 import os
 
 app = Flask(__name__)
-DB_PATH = "database.db"
 
 # --- Database setup ---
+DATABASE_URL = os.environ.get("DATABASE_URL")  # set this in railway or locally
+
 def get_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
+    conn = psycopg2.connect(DATABASE_URL, cursor_factory=psycopg2.extras.RealDictCursor)
     return conn
 
 def init_db():
-    if not os.path.exists(DB_PATH):
-        db = get_db()
-        db.execute("""CREATE TABLE IF NOT EXISTS houses (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        name TEXT UNIQUE NOT NULL
-                     )""")
-        db.execute("""CREATE TABLE IF NOT EXISTS threads (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        house_id INTEGER NOT NULL,
-                        title TEXT NOT NULL
-                     )""")
-        db.execute("""CREATE TABLE IF NOT EXISTS posts (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        thread_id INTEGER NOT NULL,
-                        nickname TEXT NOT NULL,
-                        tripcode_hash TEXT NOT NULL,
-                        content TEXT NOT NULL
-                     )""")
-        db.execute("""CREATE TABLE IF NOT EXISTS replies (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        post_id INTEGER NOT NULL,
-                        nickname TEXT NOT NULL,
-                        tripcode_hash TEXT NOT NULL,
-                        content TEXT NOT NULL
-                     )""")
-        db.commit()
+    db = get_db()
+    cur = db.cursor()
+    # houses
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS houses (
+            id SERIAL PRIMARY KEY,
+            name TEXT UNIQUE NOT NULL
+        )
+    """)
+    # threads
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS threads (
+            id SERIAL PRIMARY KEY,
+            house_id INTEGER NOT NULL REFERENCES houses(id),
+            title TEXT NOT NULL
+        )
+    """)
+    # posts
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS posts (
+            id SERIAL PRIMARY KEY,
+            thread_id INTEGER NOT NULL REFERENCES threads(id),
+            nickname TEXT NOT NULL,
+            tripcode_hash TEXT NOT NULL,
+            content TEXT NOT NULL
+        )
+    """)
+    # replies
+    cur.execute("""
+        CREATE TABLE IF NOT EXISTS replies (
+            id SERIAL PRIMARY KEY,
+            post_id INTEGER NOT NULL REFERENCES posts(id),
+            nickname TEXT NOT NULL,
+            tripcode_hash TEXT NOT NULL,
+            content TEXT NOT NULL
+        )
+    """)
+    db.commit()
+    cur.close()
+    db.close()
 
+# initialize db on first run
 init_db()
 
 # --- Helper for tripcode hashing ---
@@ -50,96 +66,101 @@ def hash_tripcode(trip):
 @app.route("/")
 def index():
     db = get_db()
-    houses = db.execute("SELECT * FROM houses ORDER BY id DESC").fetchall()
+    cur = db.cursor()
+    cur.execute("SELECT * FROM houses ORDER BY id DESC")
+    houses = cur.fetchall()
+    cur.close()
+    db.close()
     return render_template("index.html", houses=houses)
 
-@app.route("/house/new", methods=["GET", "POST"])
+@app.route("/house/new", methods=["GET","POST"])
 def new_house():
     if request.method == "POST":
-        name = request.form.get("name")
-        if not name:
-            return "Name cannot be empty", 400
+        name = request.form["name"]
         db = get_db()
+        cur = db.cursor()
         try:
-            db.execute("INSERT INTO houses (name) VALUES (?)", (name,))
+            cur.execute("INSERT INTO houses (name) VALUES (%s) RETURNING id", (name,))
             db.commit()
+            cur.close()
+            db.close()
             return redirect(url_for("index"))
-        except sqlite3.IntegrityError:
-            return "House name already taken!", 400
+        except psycopg2.errors.UniqueViolation:
+            db.rollback()
+            cur.close()
+            db.close()
+            return "House name already taken!"
     return render_template("new_house.html")
 
 @app.route("/house/<int:house_id>")
 def house(house_id):
     db = get_db()
-    house = db.execute("SELECT * FROM houses WHERE id=?", (house_id,)).fetchone()
-    if not house:
-        return "House not found", 404
-    threads = db.execute(
-        "SELECT * FROM threads WHERE house_id=? ORDER BY id DESC", (house_id,)
-    ).fetchall()
+    cur = db.cursor()
+    cur.execute("SELECT * FROM houses WHERE id=%s", (house_id,))
+    house = cur.fetchone()
+    cur.execute("SELECT * FROM threads WHERE house_id=%s ORDER BY id DESC", (house_id,))
+    threads = cur.fetchall()
+    cur.close()
+    db.close()
     return render_template("house.html", house=house, threads=threads)
 
-@app.route("/house/<int:house_id>/thread/new", methods=["GET", "POST"])
+@app.route("/house/<int:house_id>/thread/new", methods=["GET","POST"])
 def new_thread(house_id):
-    db = get_db()
-    house = db.execute("SELECT * FROM houses WHERE id=?", (house_id,)).fetchone()
-    if not house:
-        return "House not found", 404
     if request.method == "POST":
-        title = request.form.get("title")
-        nickname = request.form.get("nickname")
-        tripcode = request.form.get("tripcode", "")
-        content = request.form.get("content")
-        if not (title and nickname and content):
-            return "Missing fields", 400
+        title = request.form["title"]
+        nickname = request.form["nickname"]
+        tripcode = request.form["tripcode"]
+        content = request.form["content"]
         trip_hash = hash_tripcode(tripcode)
 
+        db = get_db()
         cur = db.cursor()
-        cur.execute("INSERT INTO threads (house_id, title) VALUES (?, ?)", (house_id, title))
-        thread_id = cur.lastrowid
-        cur.execute(
-            "INSERT INTO posts (thread_id, nickname, tripcode_hash, content) VALUES (?, ?, ?, ?)",
-            (thread_id, nickname, trip_hash, content),
-        )
+        cur.execute("INSERT INTO threads (house_id, title) VALUES (%s, %s) RETURNING id", (house_id, title))
+        thread_id = cur.fetchone()["id"]
+        cur.execute("INSERT INTO posts (thread_id, nickname, tripcode_hash, content) VALUES (%s, %s, %s, %s)",
+                    (thread_id, nickname, trip_hash, content))
         db.commit()
+        cur.close()
+        db.close()
         return redirect(url_for("thread", thread_id=thread_id))
-    return render_template("new_thread.html", house=house)
+    return render_template("new_thread.html", house_id=house_id)
 
 @app.route("/thread/<int:thread_id>")
 def thread(thread_id):
     db = get_db()
-    thread_row = db.execute("SELECT * FROM threads WHERE id=?", (thread_id,)).fetchone()
-    if not thread_row:
-        return "Thread not found", 404
-    posts_rows = db.execute("SELECT * FROM posts WHERE thread_id=? ORDER BY id ASC", (thread_id,)).fetchall()
-
+    cur = db.cursor()
+    cur.execute("SELECT * FROM threads WHERE id=%s", (thread_id,))
+    thread = cur.fetchone()
+    cur.execute("SELECT * FROM posts WHERE thread_id=%s ORDER BY id ASC", (thread_id,))
+    posts_rows = cur.fetchall()
     posts = []
     for p in posts_rows:
+        cur.execute("SELECT * FROM replies WHERE post_id=%s ORDER BY id ASC", (p["id"],))
+        replies = cur.fetchall()
         post = dict(p)
-        post["replies"] = [
-            dict(r) for r in db.execute("SELECT * FROM replies WHERE post_id=? ORDER BY id ASC", (p["id"],)).fetchall()
-        ]
+        post["replies"] = replies
         posts.append(post)
-
-    return render_template("thread.html", thread=thread_row, posts=posts)
+    cur.close()
+    db.close()
+    return render_template("thread.html", thread=thread, posts=posts)
 
 @app.route("/post/<int:post_id>/reply", methods=["POST"])
 def reply(post_id):
-    nickname = request.form.get("nickname")
-    tripcode = request.form.get("tripcode", "")
-    content = request.form.get("content")
-    if not (nickname and content):
-        return "Missing fields", 400
+    nickname = request.form["nickname"]
+    tripcode = request.form["tripcode"]
+    content = request.form["content"]
     trip_hash = hash_tripcode(tripcode)
 
     db = get_db()
-    db.execute("INSERT INTO replies (post_id, nickname, tripcode_hash, content) VALUES (?, ?, ?, ?)",
+    cur = db.cursor()
+    cur.execute("INSERT INTO replies (post_id, nickname, tripcode_hash, content) VALUES (%s, %s, %s, %s)",
                (post_id, nickname, trip_hash, content))
+    cur.execute("SELECT thread_id FROM posts WHERE id=%s", (post_id,))
+    thread_id = cur.fetchone()["thread_id"]
     db.commit()
-    thread_id_row = db.execute("SELECT thread_id FROM posts WHERE id=?", (post_id,)).fetchone()
-    if not thread_id_row:
-        return "Original post not found", 404
-    return redirect(url_for("thread", thread_id=thread_id_row["thread_id"]))
+    cur.close()
+    db.close()
+    return redirect(url_for("thread", thread_id=thread_id))
 
 if __name__ == "__main__":
     app.run(debug=True)
