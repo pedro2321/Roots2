@@ -1,27 +1,21 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Roots - Home</title>
+<link rel="stylesheet" href="/static/style.css">
+<title>Roots</title>
 </head>
 <body>
-    <h1>Roots - Houses</h1>
-
-    <h2>Create a New House</h2>
-    <form action="/house/new" method="post">
-        <input type="text" name="name" placeholder="New house name" required>
-        <button type="submit">Create House</button>
-    </form>
-
-    <h2>Existing Houses</h2>
-    <ul>
-        {% for house in houses %}
-        <li>
-            <a href="/house/{{ house['id'] }}">{{ house['name'] }}</a>
-        </li>
-        {% else %}
-        <li>No houses yet.</li>
-        {% endfor %}
-    </ul>
+<header>
+  <h1>Roots</h1>
+  <a href="/house/new">Create New House</a>
+</header>
+<main>
+<h2>Houses</h2>
+<ul>
+{% for h in houses %}
+  <li><a href="/house/{{h.id}}">{{h.name}}</a></li>
+{% endfor %}
+</ul>
+</main>
 </body>
 </html>
