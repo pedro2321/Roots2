@@ -1,22 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="/static/style.css">
-<link rel="icon" type="image/png" href="/static/favicon.png">
-<title>Roots</title>
+    <meta charset="UTF-8">
+    <title>Roots</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        main {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        ul {
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-<header>
-  <h1>Roots</h1>
-  <a href="/house/new">Create New House</a>
+<header style="display:flex; align-items:center; justify-content:space-between; background-color:#3E5F5F; padding:10px;">
+    <img src="/static/logo.png" alt="Roots Logo" style="height:80px;">
+    <a href="/house/new" style="color:#FFC857; text-decoration:none;">Create New House</a>
 </header>
+
 <main>
-<h2>Houses</h2>
-<ul>
-{% for h in houses %}
-  <li><a href="/house/{{h.id}}">{{h.name}}</a></li>
-{% endfor %}
-</ul>
+    <h2>Houses</h2>
+    <ul>
+        {% for h in houses %}
+        <li><a href="/house/{{h.id}}">{{h.name}}</a></li>
+        {% else %}
+        <li>No houses yet.</li>
+        {% endfor %}
+    </ul>
 </main>
 </body>
 </html>

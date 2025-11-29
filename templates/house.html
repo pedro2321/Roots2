@@ -1,17 +1,24 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="icon" type="image/png" href="/static/favicon.png">
+<link rel="stylesheet" href="/static/style.css">
 <title>{{ house.name }}</title>
 </head>
 <body>
-<h1>{{ house.name }}</h1>
+<header>
+  <img src="/static/logo.png" alt="Roots Logo">
+  <h1>{{ house.name }}</h1>
+  <a href="/" style="margin-left:auto;">Home</a>
+</header>
+<main>
 <a href="/house/{{ house.id }}/thread/new">New Thread</a>
 <ul>
 {% for t in threads %}
   <li><a href="/thread/{{ t.id }}">{{ t.title }}</a></li>
+{% else %}
+  <li>No threads yet.</li>
 {% endfor %}
 </ul>
-<a href="/">Back</a>
+</main>
 </body>
 </html>
