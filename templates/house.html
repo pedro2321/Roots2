@@ -6,12 +6,11 @@
 </head>
 <body>
 <header>
-  <img src="/static/logo.png" alt="Roots Logo" height="40">
-  <a href="/">Home</a>
-  <a href="/house/new">Create New House</a>
+  <img src="/static/logo.png" alt="Roots Logo">
+  <h1>{{ house.name }}</h1>
+  <a href="/" style="margin-left:auto;">Home</a>
 </header>
-
-<h1>{{ house.name }}</h1>
+<main>
 <a href="/house/{{ house.id }}/thread/new">New Thread</a>
 <ul>
 {% for t in threads %}
@@ -20,6 +19,6 @@
   <li>No threads yet.</li>
 {% endfor %}
 </ul>
-<a href="/">Back</a>
+</main>
 </body>
 </html>

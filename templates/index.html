@@ -6,14 +6,15 @@
 </head>
 <body>
 <header>
-  <a href="/"><img src="/static/logo.png" alt="Roots Logo" style="height:60px;"></a>
-  <a href="/house/new">Create New House</a>
+  <img src="/static/logo.png" alt="Roots Logo">
+  <h1>Roots</h1>
+  <a href="/house/new" style="margin-left:auto;">Create New House</a>
 </header>
 <main>
 <h2>Houses</h2>
 <ul>
 {% for h in houses %}
-  <li><a href="/house/{{h.id}}">{{h.name}}</a></li>
+  <li><a href="/house/{{ h.id }}">{{ h.name }}</a></li>
 {% else %}
   <li>No houses yet.</li>
 {% endfor %}

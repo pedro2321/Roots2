@@ -6,11 +6,11 @@
 </head>
 <body>
 <header>
-  <a href="/"><img src="/static/logo.png" alt="Roots Logo" style="height:60px;"></a>
+  <img src="/static/logo.png" alt="Roots Logo">
+  <h1>{{ thread.title }}</h1>
+  <a href="/house/{{ posts[0].house_id if posts else 1 }}" style="margin-left:auto;">Back to House</a>
 </header>
-
-<h1>{{ thread.title }}</h1>
-
+<main>
 <ul>
 {% for p in posts %}
   <li>
@@ -31,7 +31,6 @@
   </li>
 {% endfor %}
 </ul>
-
-<a href="/house/{{ posts[0].house_id if posts else 1 }}">Back to House</a>
+</main>
 </body>
 </html>
