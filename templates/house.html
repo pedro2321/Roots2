@@ -2,11 +2,16 @@
 <html>
 <head><title>{{ house.name }}</title></head>
 <body>
+<header>
+  <a href="/"><img src="/static/logo.png" alt="Roots Logo" style="height:60px;"></a>
+</header>
 <h1>{{ house.name }}</h1>
 <a href="/house/{{ house.id }}/thread/new">New Thread</a>
 <ul>
 {% for t in threads %}
   <li><a href="/thread/{{ t.id }}">{{ t.title }}</a></li>
+{% else %}
+  <li>No threads yet.</li>
 {% endfor %}
 </ul>
 <a href="/">Back</a>
