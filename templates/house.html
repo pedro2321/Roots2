@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head><title>{{ house.name }}</title></head>
+<body>
+<h1>{{ house.name }}</h1>
+<a href="/house/{{ house.id }}/thread/new">New Thread</a>
+<ul>
+{% for t in threads %}
+  <li><a href="/thread/{{ t.id }}">{{ t.title }}</a></li>
+{% endfor %}
+</ul>
+<a href="/">Back</a>
+</body>
+</html>
