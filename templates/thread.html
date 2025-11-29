@@ -1,13 +1,31 @@
 <!DOCTYPE html>
 <html>
-<head><title>{{ thread.title }}</title></head>
+<head>
+  <link rel="stylesheet" href="/static/style.css">
+  <title>{{ thread.title }}</title>
+</head>
 <body>
-<h1>{{ thread.title }}</h1>
+<header>
+  <h1>{{ thread.title }}</h1>
+  <a href="/house/{{ posts[0].house_id if posts else 1 }}">Back to House</a>
+</header>
 
+<main>
 <ul>
 {% for p in posts %}
   <li>
     <b>{{ p.nickname }}!{{ p.tripcode_hash[:8] }}</b>: {{ p.content }}
+
+    <!-- Replies -->
+    {% if p.replies %}
+    <ul>
+      {% for r in p.replies %}
+      <li><b>{{ r.nickname }}!{{ r.tripcode_hash[:8] }}</b>: {{ r.content }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <!-- Reply form -->
     <form action="/post/{{ p.id }}/reply" method="POST">
       <input type="text" name="nickname" placeholder="Nickname" required>
       <input type="text" name="tripcode" placeholder="Tripcode" required>
@@ -17,7 +35,6 @@
   </li>
 {% endfor %}
 </ul>
-
-<a href="/house/{{ thread.house_id if thread else 1 }}">Back</a>
+</main>
 </body>
 </html>
