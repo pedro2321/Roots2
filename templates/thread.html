@@ -2,26 +2,16 @@
 <html>
 <head>
 <link rel="stylesheet" href="/static/style.css">
+<link rel="icon" type="image/png" href="/static/favicon.png">
 <title>{{ thread.title }}</title>
 </head>
 <body>
-<header>
-  <img src="/static/logo.png" alt="Roots Logo">
-  <h1>{{ thread.title }}</h1>
-  <a href="/house/{{ posts[0].house_id if posts else 1 }}" style="margin-left:auto;">Back to House</a>
-</header>
-<main>
+<h1>{{ thread.title }}</h1>
+
 <ul>
 {% for p in posts %}
   <li>
     <b>{{ p.nickname }}!{{ p.tripcode_hash[:8] }}</b>: {{ p.content }}
-    <!-- Replies -->
-    <ul>
-    {% for r in p.replies %}
-      <li><b>{{ r.nickname }}!{{ r.tripcode_hash[:8] }}</b>: {{ r.content }}</li>
-    {% endfor %}
-    </ul>
-    <!-- Reply form -->
     <form action="/post/{{ p.id }}/reply" method="POST">
       <input type="text" name="nickname" placeholder="Nickname" required>
       <input type="text" name="tripcode" placeholder="Tripcode" required>
@@ -31,6 +21,7 @@
   </li>
 {% endfor %}
 </ul>
-</main>
+
+<a href="/house/{{ posts[0].thread_id if posts else 1 }}">Back</a>
 </body>
 </html>

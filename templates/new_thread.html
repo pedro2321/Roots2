@@ -1,16 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="/static/style.css">
+<link rel="icon" type="image/png" href="/static/favicon.png">
 <title>New Thread</title>
 </head>
 <body>
-<header>
-  <img src="/static/logo.png" alt="Roots Logo">
-  <h1>Create Thread</h1>
-  <a href="/house/{{ house_id }}" style="margin-left:auto;">Back</a>
-</header>
-<main>
+<h1>Create Thread</h1>
 <form method="POST">
 <input type="text" name="title" placeholder="Thread Title" required><br>
 <input type="text" name="nickname" placeholder="Nickname" required><br>
@@ -18,6 +13,6 @@
 <textarea name="content" placeholder="Content" required></textarea><br>
 <button type="submit">Create Thread</button>
 </form>
-</main>
+<a href="/house/{{ house_id }}">Back</a>
 </body>
 </html>

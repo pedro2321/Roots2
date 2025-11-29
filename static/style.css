@@ -6,17 +6,22 @@ body {
   padding: 0;
 }
 
+/* --- STICKY HEADER --- */
 header {
   background-color: #3E5F5F;
   padding: 10px;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: flex-start; /* logo stays left */
+
+  position: sticky;
+  top: 0;
+  z-index: 999;
 }
 
-header img {
-  height: 40px;
-  margin-right: 10px;
+.logo {
+  display: block;
+  height: 80px;
 }
 
 a {
@@ -25,6 +30,13 @@ a {
 }
 a:hover {
   text-decoration: underline;
+}
+
+/* center lists on all pages */
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 ul {
@@ -36,17 +48,13 @@ li {
   margin-bottom: 10px;
 }
 
-/* Center main content */
-main {
-  max-width: 800px;
-  margin: 20px auto;
-  text-align: center;
-}
-
-input, textarea, button {
+input,
+textarea,
+button {
   margin: 5px 0;
   padding: 5px;
 }
+
 button {
   cursor: pointer;
 }
