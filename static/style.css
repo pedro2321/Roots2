@@ -1,60 +1,116 @@
+/* --- general body styling --- */
 body {
   background-color: #2F4F4F;
   color: #F5F5F5;
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
+  text-align: center;
 }
 
-/* --- STICKY HEADER --- */
+/* --- header styling --- */
 header {
   background-color: #3E5F5F;
   padding: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-
   position: sticky;
   top: 0;
-  z-index: 999;
+  z-index: 1000;
 }
 
+/* --- logo --- */
 .logo {
-  display: block;
-  height: 80px;
+  height: 60px;
 }
 
+/* --- links --- */
 a {
   color: #FFC857;
   text-decoration: none;
 }
+
 a:hover {
   text-decoration: underline;
 }
 
-/* center lists on all pages */
-main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
+/* --- lists --- */
 ul {
   list-style: none;
   padding-left: 0;
+  margin: 0 auto;
 }
 
 li {
   margin-bottom: 10px;
 }
 
-input,
-textarea,
-button {
+/* --- input, textarea, button --- */
+input, textarea, button {
   margin: 5px 0;
   padding: 5px;
+  font-family: inherit;
 }
 
 button {
   cursor: pointer;
+}
+
+/* --- new thread / house buttons --- */
+.new-thread-button, .new-house-button {
+  background-color: #FFC857;
+  color: #2F4F4F;
+  text-decoration: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  display: inline-block;
+  margin-top: 20px;
+}
+
+.new-thread-button:hover, .new-house-button:hover {
+  background-color: #FFD97D;
+}
+
+/* --- posts and replies --- */
+.posts-list, .replies-list {
+  list-style: none;
+  padding-left: 0;
+  text-align: center;
+  margin: 0 auto;
+}
+
+.posts-list li, .replies-list li {
+  margin-bottom: 15px;
+}
+
+.posts-list b, .replies-list b {
+  display: block;
+  margin-bottom: 5px;
+}
+
+/* --- forms inside posts/replies --- */
+form {
+  margin-top: 5px;
+}
+
+/* --- container centering --- */
+.centered-container {
+  display: flex;
+  justify-content: center;
+  gap: 50px; /* for side-by-side lists if needed */
+}
+
+/* --- two house lists in index --- */
+.houses-list, .active-houses-list {
+  text-align: center;
+  list-style: none;
+  padding-left: 0;
+  display: inline-block;
+  vertical-align: top;
+  margin: 0 10px;
+}
+
+.houses-list li, .active-houses-list li {
+  margin-bottom: 10px;
 }
