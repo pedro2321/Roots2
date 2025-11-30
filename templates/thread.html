@@ -3,26 +3,63 @@
 <head>
 <link rel="stylesheet" href="/static/style.css">
 <title>{{ thread.title }}</title>
+<style>
+/* center posts and replies */
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+ul.posts {
+  list-style: none;
+  padding-left: 0;
+  width: 100%;
+  max-width: 700px;
+}
+
+ul.posts li {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+ul.posts li ul.replies {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 10px;
+  text-align: center;
+}
+
+ul.posts li ul.replies li {
+  margin-bottom: 5px;
+}
+
+.reply-form input, .reply-form button {
+  margin: 5px 2px;
+}
+</style>
 </head>
 <body>
 <header>
-  <img src="/static/logo.png" alt="Logo" class="logo">
+  <h1>{{ thread.title }}</h1>
+  <a href="/house/{{ thread.house_id }}" style="position:absolute; right:10px; top:10px;">Back to House</a>
 </header>
 
-<h1>{{ thread.title }}</h1>
-
-<ul>
+<main>
+<ul class="posts">
 {% for p in posts %}
   <li>
     <b>{{ p.nickname }}!{{ p.tripcode_hash[:8] }}</b>: {{ p.content }}
+
     <!-- Replies -->
-    <ul>
+    <ul class="replies">
     {% for r in p.replies %}
       <li><b>{{ r.nickname }}!{{ r.tripcode_hash[:8] }}</b>: {{ r.content }}</li>
     {% endfor %}
     </ul>
+
     <!-- Reply form -->
-    <form action="/post/{{ p.id }}/reply" method="POST">
+    <form class="reply-form" action="/post/{{ p.id }}/reply" method="POST">
       <input type="text" name="nickname" placeholder="Nickname" required>
       <input type="text" name="tripcode" placeholder="Tripcode" required>
       <input type="text" name="content" placeholder="Reply" required>
@@ -31,8 +68,6 @@
   </li>
 {% endfor %}
 </ul>
-
-<a href="/house/{{ thread.house_id }}">Back to House</a>
+</main>
 </body>
 </html>
-
