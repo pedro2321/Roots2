@@ -2,14 +2,32 @@
 <html>
 <head>
 <link rel="stylesheet" href="/static/style.css">
-<title>New House</title>
+<title>blip1t - New House</title>
 </head>
 <body>
-<header>
-  <img src="/static/logo.png" alt="Roots Logo">
-  <h1>Create House</h1>
-  <a href="/" style="margin-left:auto;">Home</a>
+<header style="display:flex; align-items:center;">
+  <!-- left spacer -->
+  <div style="flex:1;"></div>
+
+  <!-- centered logo with nudge -->
+  <img
+    src="/static/logo.png"
+    alt="blip1t Logo"
+    style="height:80px; transform: translateX(10px);"
+  >
+
+  <!-- right: Home link -->
+  <div style="flex:1; text-align:right;">
+    <a href="/">Home</a>
+  </div>
 </header>
+
+<h1 style="text-align:center; margin-top:10px;">
+  Create House
+</h1>
+
+
+
 <main>
 <form method="POST">
 <input type="text" name="name" placeholder="House Name" required>

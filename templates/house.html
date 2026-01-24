@@ -1,26 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>{{ house.name }}</title>
+  <title>blip1t - {{ house.name }}</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-<header>
-  <img src="/static/logo.png" class="logo" alt="Logo">
+<header style="display:flex; justify-content:center;">
+  <img src="/static/logo.png" alt="Logo" style="height:80px; transform: translateX(10px);">
 </header>
 
 <main>
   <h1 style="text-align: center; margin-top: 20px;">{{ house.name }}</h1>
 
   <div style="text-align: center; margin: 20px 0;">
-    <a href="/house/{{ house.id }}/thread/new" class="new-thread-button" style="display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #FFC857; color: #2F4F4F; text-decoration: none; border-radius: 5px;">New Thread</a>
+    <a href="/house/{{ house.id }}/thread/new" class="new-thread-button" style="display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #D8BCAB; color: #101111; text-decoration: none; border-radius: 5px; margin-top: 0px">New Thread</a>
   </div>
 
   <ul class="threads-list" style="text-align: center;">
     {% for t in threads %}
       <li style="margin-bottom: 10px;"><a href="/thread/{{ t.id }}">{{ t.title }}</a></li>
     {% else %}
-      <li>No threads yet.</li>
+      <li>No threads yet!</li>
     {% endfor %}
   </ul>
 

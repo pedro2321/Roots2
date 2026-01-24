@@ -1,23 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="/static/style.css">
-<title>New Thread</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <title>blip1t - New Thread</title>
 </head>
 <body>
-<header>
-  <img src="/static/logo.png" alt="Roots Logo">
-  <h1>Create Thread</h1>
-  <a href="/house/{{ house_id }}" style="margin-left:auto;">Back</a>
+
+<header style="display:flex; align-items:center;">
+  <!-- left spacer -->
+  <div style="flex:1;"></div>
+
+  <!-- centered logo -->
+  <img
+    src="/static/logo.png"
+    alt="blip1t Logo"
+    style="height:80px; transform: translateX(10px);"
+  >
+
+  <!-- right: back button -->
+  <div style="flex:1; text-align:right;">
+    <a href="/house/{{ house_id }}">Back</a>
+  </div>
 </header>
+
+<h1 style="text-align:center; margin-top:10px;">
+  Create Thread
+</h1>
+
 <main>
-<form method="POST">
-<input type="text" name="title" placeholder="Thread Title" required><br>
-<input type="text" name="nickname" placeholder="Nickname" required><br>
-<input type="text" name="tripcode" placeholder="Tripcode" required><br>
-<textarea name="content" placeholder="Content" required></textarea><br>
-<button type="submit">Create Thread</button>
-</form>
+  <form method="POST">
+    <input type="text" name="title" placeholder="Thread Title" required><br>
+    <input type="text" name="nickname" placeholder="Nickname" required><br>
+    <input type="text" name="tripcode" placeholder="Tripcode" required><br>
+    <textarea name="content" placeholder="Content" required></textarea><br>
+    <button type="submit">Create Thread</button>
+  </form>
 </main>
+
 </body>
 </html>

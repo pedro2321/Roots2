@@ -1,23 +1,59 @@
 /* --- general body styling --- */
 body {
-  background-color: #1471B3;
-  color: #F5F5F5;
+  background-color: #212332;
+  background-image: url('/static/pattern.png'); /* your 1046x1046 semi-transparent image */
+  background-repeat: repeat;                   /* tile across page */
+  background-size: 200px 200px;               /* scaled down for subtle tiling */
+  background-attachment: fixed;               /* optional: stays put on scroll */
+  color: #D8BCAB;
   font-family: 'Open Sans', sans-serif;
+  font-weight: 550;
   margin: 0;
   padding: 0;
   text-align: center;
 }
 
-/* --- header styling --- */
+/* --- header styling (polished) --- */
 header {
-  background-color: #11578a;
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.06),
+      rgba(255, 255, 255, 0.0) 35%
+    ),
+    #2F3453;
+
   padding: 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   position: sticky;
   top: 0;
   z-index: 1000;
+
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.05),
+    0 4px 12px rgba(0,0,0,0.55);
+
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+/* subtle highlight layer */
+header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(255,255,255,0.08),
+      rgba(255,255,255,0.0) 45%
+    );
+
+  opacity: 0.4;
 }
 
 /* --- logo --- */
@@ -27,7 +63,7 @@ header {
 
 /* --- links --- */
 a {
-  color: #FFC857;
+  color: #D8BCAB;
   text-decoration: none;
 }
 
@@ -59,17 +95,17 @@ button {
 
 /* --- new thread / house buttons --- */
 .new-thread-button, .new-house-button {
-  background-color: #FFC857;
-  color: #2F4F4F;
+  background-color: #D8BCAB;
+  color: #101111;
   text-decoration: none;
   padding: 10px 15px;
-  border-radius: 5px;
+  border-radius: 10px;
   display: inline-block;
   margin-top: 20px;
 }
 
 .new-thread-button:hover, .new-house-button:hover {
-  background-color: #FFD97D;
+  background-color: #D8BCAB;
 }
 
 /* --- posts and replies --- */
@@ -98,7 +134,7 @@ form {
 .centered-container {
   display: flex;
   justify-content: center;
-  gap: 50px; /* for side-by-side lists if needed */
+  gap: 50px;
 }
 
 /* --- two house lists in index --- */

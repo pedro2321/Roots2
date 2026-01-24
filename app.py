@@ -1,57 +1,121 @@
 from flask import Flask, render_template, request, redirect
-import psycopg2
-import psycopg2.extras
 import hashlib
 import os
 
+# DB imports (both)
+import sqlite3
+import psycopg2
+import psycopg2.extras
+
 app = Flask(__name__)
 
-# --- Database setup ---
+# -----------------------------
+# Database setup (AUTO SWITCH)
+# -----------------------------
+USE_POSTGRES = "DATABASE_URL" in os.environ
+
 def get_db():
-    conn = psycopg2.connect(os.environ["DATABASE_URL"])
-    return conn
+    if USE_POSTGRES:
+        conn = psycopg2.connect(os.environ["DATABASE_URL"])
+        return conn
+    else:
+        conn = sqlite3.connect("database.db")
+        conn.row_factory = sqlite3.Row
+        return conn
 
 def init_db():
     db = get_db()
     cur = db.cursor()
-    cur.execute("""CREATE TABLE IF NOT EXISTS houses (
-                       id SERIAL PRIMARY KEY,
-                       name TEXT UNIQUE NOT NULL
-                   )""")
-    cur.execute("""CREATE TABLE IF NOT EXISTS threads (
-                       id SERIAL PRIMARY KEY,
-                       house_id INTEGER NOT NULL REFERENCES houses(id),
-                       title TEXT NOT NULL
-                   )""")
-    cur.execute("""CREATE TABLE IF NOT EXISTS posts (
-                       id SERIAL PRIMARY KEY,
-                       thread_id INTEGER NOT NULL REFERENCES threads(id),
-                       nickname TEXT NOT NULL,
-                       tripcode_hash TEXT NOT NULL,
-                       content TEXT NOT NULL
-                   )""")
-    cur.execute("""CREATE TABLE IF NOT EXISTS replies (
-                       id SERIAL PRIMARY KEY,
-                       post_id INTEGER NOT NULL REFERENCES posts(id),
-                       nickname TEXT NOT NULL,
-                       tripcode_hash TEXT NOT NULL,
-                       content TEXT NOT NULL
-                   )""")
+
+    if USE_POSTGRES:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS houses (
+                id SERIAL PRIMARY KEY,
+                name TEXT UNIQUE NOT NULL
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS threads (
+                id SERIAL PRIMARY KEY,
+                house_id INTEGER NOT NULL REFERENCES houses(id),
+                title TEXT NOT NULL
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS posts (
+                id SERIAL PRIMARY KEY,
+                thread_id INTEGER NOT NULL REFERENCES threads(id),
+                nickname TEXT NOT NULL,
+                tripcode_hash TEXT NOT NULL,
+                content TEXT NOT NULL
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS replies (
+                id SERIAL PRIMARY KEY,
+                post_id INTEGER NOT NULL REFERENCES posts(id),
+                nickname TEXT NOT NULL,
+                tripcode_hash TEXT NOT NULL,
+                content TEXT NOT NULL
+            )
+        """)
+    else:
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS houses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT UNIQUE NOT NULL
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS threads (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                house_id INTEGER NOT NULL,
+                title TEXT NOT NULL
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS posts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                thread_id INTEGER NOT NULL,
+                nickname TEXT NOT NULL,
+                tripcode_hash TEXT NOT NULL,
+                content TEXT NOT NULL
+            )
+        """)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS replies (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                post_id INTEGER NOT NULL,
+                nickname TEXT NOT NULL,
+                tripcode_hash TEXT NOT NULL,
+                content TEXT NOT NULL
+            )
+        """)
+
     db.commit()
     cur.close()
     db.close()
 
 init_db()
 
-# --- Helper ---
+# -----------------------------
+# Helpers
+# -----------------------------
 def hash_tripcode(trip):
     return hashlib.sha256(trip.encode()).hexdigest()
 
-# --- Routes ---
+def cursor(db):
+    if USE_POSTGRES:
+        return db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    return db.cursor()
+
+# -----------------------------
+# Routes
+# -----------------------------
 @app.route("/")
 def index():
     db = get_db()
-    cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    cur = cursor(db)
     cur.execute("SELECT * FROM houses ORDER BY id DESC")
     houses = cur.fetchall()
     cur.close()
@@ -65,10 +129,13 @@ def new_house():
         db = get_db()
         cur = db.cursor()
         try:
-            cur.execute("INSERT INTO houses (name) VALUES (%s)", (name,))
+            if USE_POSTGRES:
+                cur.execute("INSERT INTO houses (name) VALUES (%s)", (name,))
+            else:
+                cur.execute("INSERT INTO houses (name) VALUES (?)", (name,))
             db.commit()
             return redirect("/")
-        except psycopg2.errors.UniqueViolation:
+        except Exception:
             db.rollback()
             return "House name already taken!"
         finally:
@@ -79,16 +146,17 @@ def new_house():
 @app.route("/house/<int:house_id>")
 def house(house_id):
     db = get_db()
-    cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cur.execute("SELECT * FROM houses WHERE id=%s", (house_id,))
+    cur = cursor(db)
+    q = "%s" if USE_POSTGRES else "?"
+    cur.execute(f"SELECT * FROM houses WHERE id={q}", (house_id,))
     house = cur.fetchone()
-    cur.execute("SELECT * FROM threads WHERE house_id=%s ORDER BY id DESC", (house_id,))
+    cur.execute(f"SELECT * FROM threads WHERE house_id={q} ORDER BY id DESC", (house_id,))
     threads = cur.fetchall()
     cur.close()
     db.close()
     return render_template("house.html", house=house, threads=threads)
 
-@app.route("/house/<int:house_id>/thread/new", methods=["GET","POST"])
+@app.route("/house/<int:house_id>/thread/new", methods=["GET", "POST"])
 def new_thread(house_id):
     if request.method == "POST":
         title = request.form["title"]
@@ -99,30 +167,54 @@ def new_thread(house_id):
 
         db = get_db()
         cur = db.cursor()
-        cur.execute("INSERT INTO threads (house_id, title) VALUES (%s, %s) RETURNING id", (house_id, title))
-        thread_id = cur.fetchone()[0]
-        cur.execute("INSERT INTO posts (thread_id, nickname, tripcode_hash, content) VALUES (%s, %s, %s, %s)",
-                    (thread_id, nickname, trip_hash, content))
+
+        if USE_POSTGRES:
+            cur.execute(
+                "INSERT INTO threads (house_id, title) VALUES (%s, %s) RETURNING id",
+                (house_id, title)
+            )
+            thread_id = cur.fetchone()[0]
+            cur.execute(
+                "INSERT INTO posts (thread_id, nickname, tripcode_hash, content) VALUES (%s, %s, %s, %s)",
+                (thread_id, nickname, trip_hash, content)
+            )
+        else:
+            cur.execute(
+                "INSERT INTO threads (house_id, title) VALUES (?, ?)",
+                (house_id, title)
+            )
+            thread_id = cur.lastrowid
+            cur.execute(
+                "INSERT INTO posts (thread_id, nickname, tripcode_hash, content) VALUES (?, ?, ?, ?)",
+                (thread_id, nickname, trip_hash, content)
+            )
+
         db.commit()
         cur.close()
         db.close()
         return redirect(f"/thread/{thread_id}")
+
     return render_template("new_thread.html", house_id=house_id)
 
 @app.route("/thread/<int:thread_id>")
 def thread(thread_id):
     db = get_db()
-    cur = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    cur.execute("SELECT * FROM threads WHERE id=%s", (thread_id,))
+    cur = cursor(db)
+    q = "%s" if USE_POSTGRES else "?"
+
+    cur.execute(f"SELECT * FROM threads WHERE id={q}", (thread_id,))
     thread = cur.fetchone()
-    cur.execute("SELECT * FROM posts WHERE thread_id=%s ORDER BY id ASC", (thread_id,))
+
+    cur.execute(f"SELECT * FROM posts WHERE thread_id={q} ORDER BY id ASC", (thread_id,))
     posts_rows = cur.fetchall()
+
     posts = []
     for p in posts_rows:
         post = dict(p)
-        cur.execute("SELECT * FROM replies WHERE post_id=%s ORDER BY id ASC", (p["id"],))
+        cur.execute(f"SELECT * FROM replies WHERE post_id={q} ORDER BY id ASC", (p["id"],))
         post["replies"] = cur.fetchall()
         posts.append(post)
+
     cur.close()
     db.close()
     return render_template("thread.html", thread=thread, posts=posts)
@@ -136,11 +228,17 @@ def reply(post_id):
 
     db = get_db()
     cur = db.cursor()
-    cur.execute("INSERT INTO replies (post_id, nickname, tripcode_hash, content) VALUES (%s, %s, %s, %s)",
-               (post_id, nickname, trip_hash, content))
+    q = "%s" if USE_POSTGRES else "?"
+
+    cur.execute(
+        f"INSERT INTO replies (post_id, nickname, tripcode_hash, content) VALUES ({q}, {q}, {q}, {q})",
+        (post_id, nickname, trip_hash, content)
+    )
     db.commit()
-    cur.execute("SELECT thread_id FROM posts WHERE id=%s", (post_id,))
+
+    cur.execute(f"SELECT thread_id FROM posts WHERE id={q}", (post_id,))
     thread_id = cur.fetchone()[0]
+
     cur.close()
     db.close()
     return redirect(f"/thread/{thread_id}")
