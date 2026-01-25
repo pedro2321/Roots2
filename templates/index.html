@@ -10,29 +10,94 @@
             flex-direction: column;
             align-items: center;
         }
-        ul {
+
+        /* container for both lists side by side */
+        .houses-container {
+            display: flex;
+            justify-content: center;
+            gap: 300px; /* distance between favorites and all houses */
+            margin-top: 20px;
+            margin-left: 0px;
+        }
+
+        .houses-column {
             text-align: center;
+        }
+
+        /* fancy styling only for homepage houses */
+        .house-list li {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background-color: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .house-list li:hover {
+            background-color: rgba(255,255,255,0.1);
         }
     </style>
 </head>
 <body>
-<header style="display:flex; align-items:center; justify-content:space-between; background-color:#2F3453; padding:10px;">
+<header style="display:flex; align-items:center; justify-content:space-between; background-color:#386159; padding:10px;">
     <img
   src="/static/logo.png"
   alt="blip1t Logo"
   style="display:block; margin: 0 auto; transform: translateX(81px); height:80px;">
-    <a href="/house/new" style="color:#D8BCAB; text-decoration:none;">Create New House</a>
+    <a href="/house/new" style="color:#e6cdbd; text-decoration:none;">Create New House</a>
 </header>
 
 <main>
-    <h2>Houses</h2>
-    <ul>
-        {% for h in houses %}
-        <li><a href="/house/{{h.id}}">{{h.name}}</a></li>
-        {% else %}
-        <li>No houses yet.</li>
-        {% endfor %}
-    </ul>
+    <div class="houses-container">
+        <div class="houses-column">
+            <h2>All Houses</h2>
+            <ul class="house-list">
+                {% for h in houses %}
+                <li data-id="{{h.id}}"><a href="/house/{{h.id}}">{{h.name}}</a></li>
+                {% else %}
+                <li>No houses yet.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <div class="houses-column">
+            <h2>Favorite Houses</h2>
+            <ul id="favorite-houses" class="house-list">
+                <!-- favorites inserted by JS -->
+            </ul>
+        </div>
+    </div>
 </main>
+
+<script>
+// read favorites from localStorage
+const favKey = 'favoriteHouses';
+const favorites = JSON.parse(localStorage.getItem(favKey) || '[]');
+
+// get favorite houses UL
+const favList = document.getElementById('favorite-houses');
+
+// find all houses on page
+const allHouses = document.querySelectorAll('ul.house-list li[data-id]');
+
+let hasFavorites = false;
+
+// loop through all houses, move favorites to favorite list
+allHouses.forEach(li => {
+  const houseId = li.dataset.id;
+  if(favorites.includes(houseId)) {
+    const clone = li.cloneNode(true);
+    favList.appendChild(clone);
+    hasFavorites = true;
+  }
+});
+
+// if no favorites, show placeholder
+if(!hasFavorites) {
+  const placeholder = document.createElement('li');
+  placeholder.textContent = 'No favorite houses yet.';
+  favList.appendChild(placeholder);
+}
+</script>
 </body>
 </html>

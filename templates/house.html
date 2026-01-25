@@ -12,8 +12,30 @@
 <main>
   <h1 style="text-align: center; margin-top: 20px;">{{ house.name }}</h1>
 
+  <!-- Favorite button -->
+  <!-- Favorite button -->
+<div style="text-align: center; margin: -12px 0 10px 0;">
+  <button id="fav-btn" style="
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #e6cdbd;
+    color: #101111;
+    text-decoration: none;
+    border-radius: 5px;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 550;
+    font-size: 16px; /* match your new thread button */
+    line-height: 1.2;
+    border: none;
+    cursor: pointer;
+  ">
+    ★ Favorite
+  </button>
+</div>
+
+
   <div style="text-align: center; margin: 20px 0;">
-    <a href="/house/{{ house.id }}/thread/new" class="new-thread-button" style="display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #D8BCAB; color: #101111; text-decoration: none; border-radius: 5px; margin-top: 0px">New Thread</a>
+    <a href="/house/{{ house.id }}/thread/new" class="new-thread-button" style="display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #e6cdbd; color: #101111; text-decoration: none; border-radius: 5px; margin-top: 0px">New Thread</a>
   </div>
 
   <ul class="threads-list" style="text-align: center;">
@@ -28,5 +50,33 @@
     <a href="/">Back</a>
   </div>
 </main>
+
+<script>
+// localStorage favorites setup
+const favKey = 'favoriteHouses';
+let favorites = JSON.parse(localStorage.getItem(favKey) || '[]');
+const houseId = '{{ house.id }}';
+const favBtn = document.getElementById('fav-btn');
+
+// initialize button text with colored symbol
+if(favorites.includes(houseId)) {
+  favBtn.innerHTML = '<span style="color: #386159;">★</span> Favorited';
+} else {
+  favBtn.innerHTML = '<span style="color: gray;">☆</span> Favorite';
+}
+
+// toggle favorite on click
+favBtn.addEventListener('click', () => {
+  if(favorites.includes(houseId)) {
+    favorites = favorites.filter(id => id !== houseId);
+    favBtn.innerHTML = '<span style="color: gray;">☆</span> Favorite';
+  } else {
+    favorites.push(houseId);
+    favBtn.innerHTML = '<span style="color: #386159;">★</span> Favorited';
+  }
+  localStorage.setItem(favKey, JSON.stringify(favorites));
+});
+</script>
+
 </body>
 </html>

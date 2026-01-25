@@ -1,11 +1,11 @@
 /* --- general body styling --- */
 body {
-  background-color: #212332;
+  background-color: #233a36;
   background-image: url('/static/pattern.png'); /* your 1046x1046 semi-transparent image */
-  background-repeat: repeat;                   /* tile across page */
-  background-size: 200px 200px;               /* scaled down for subtle tiling */
-  background-attachment: fixed;               /* optional: stays put on scroll */
-  color: #D8BCAB;
+  background-repeat: repeat;                   
+  background-size: 200px 200px;               
+  background-attachment: fixed;               
+  color: #e6cdbd;
   font-family: 'Open Sans', sans-serif;
   font-weight: 550;
   margin: 0;
@@ -21,7 +21,7 @@ header {
       rgba(255, 255, 255, 0.06),
       rgba(255, 255, 255, 0.0) 35%
     ),
-    #2F3453;
+    #386159;
 
   padding: 10px;
   display: flex;
@@ -39,20 +39,17 @@ header {
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
-/* subtle highlight layer */
 header::after {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-
   background:
     linear-gradient(
       to bottom,
       rgba(255,255,255,0.08),
       rgba(255,255,255,0.0) 45%
     );
-
   opacity: 0.4;
 }
 
@@ -63,7 +60,7 @@ header::after {
 
 /* --- links --- */
 a {
-  color: #D8BCAB;
+  color: #e6cdbd;
   text-decoration: none;
 }
 
@@ -95,7 +92,7 @@ button {
 
 /* --- new thread / house buttons --- */
 .new-thread-button, .new-house-button {
-  background-color: #D8BCAB;
+  background-color: #e6cdbd;
   color: #101111;
   text-decoration: none;
   padding: 10px 15px;
@@ -105,7 +102,7 @@ button {
 }
 
 .new-thread-button:hover, .new-house-button:hover {
-  background-color: #D8BCAB;
+  background-color: #e6cdbd;
 }
 
 /* --- posts and replies --- */
@@ -137,16 +134,35 @@ form {
   gap: 50px;
 }
 
-/* --- two house lists in index --- */
-.houses-list, .active-houses-list {
+/* --- homepage houses lists --- */
+.houses-container {
+  display: flex;
+  justify-content: center;
+  gap: 300px; /* distance between columns */
+  margin-top: 20px;
+}
+
+.houses-column {
+  text-align: center;
+  min-width: 200px; /* ensures columns align nicely */
+}
+
+/* fancy homepage-only lists */
+ul.house-list, #favorite-houses {
+  width: 100%;          /* make li backgrounds span full column width */
   text-align: center;
   list-style: none;
   padding-left: 0;
-  display: inline-block;
-  vertical-align: top;
-  margin: 0 10px;
 }
 
-.houses-list li, .active-houses-list li {
+ul.house-list li, #favorite-houses li {
   margin-bottom: 10px;
+  padding: 8px 12px;
+  background-color: rgba(255,255,255,0.05);
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+ul.house-list li:hover, #favorite-houses li:hover {
+  background-color: rgba(255,255,255,0.1);
 }
